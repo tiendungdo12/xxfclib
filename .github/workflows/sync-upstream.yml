@@ -1,0 +1,44 @@
+name: Sync fork with upstream
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync master with upstream
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/horsicq/xxfclib.git
+          git fetch upstream master
+
+          if git diff --quiet HEAD "upstream/master" -- . ':!.github/workflows/sync-upstream.yml'; then
+            echo "Fork is already up to date with upstream code"
+            exit 0
+          fi
+
+          workflow_file=$(mktemp)
+          cp .github/workflows/sync-upstream.yml "$workflow_file"
+          git checkout upstream/master -- .
+          mkdir -p .github/workflows
+          cp "$workflow_file" .github/workflows/sync-upstream.yml
+          rm "$workflow_file"
+          git add -A
+          git commit -m "chore: sync fork with upstream"
+          git push origin HEAD:master --force
