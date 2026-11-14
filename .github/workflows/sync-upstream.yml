@@ -19,8 +19,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync master with upstream
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -28,17 +26,26 @@ jobs:
           git remote add upstream https://github.com/horsicq/xxfclib.git
           git fetch upstream master
 
-          if git diff --quiet HEAD "upstream/master" -- . ':!.github/workflows/sync-upstream.yml'; then
+          changed_files="$(git diff --name-only HEAD upstream/master -- . || true)"
+          changed_files="$(printf '%s\n' "$changed_files" | grep -v '^\.github/workflows/sync-upstream\.yml$' || true)"
+
+          if [ -z "$changed_files" ]; then
             echo "Fork is already up to date with upstream code"
             exit 0
           fi
 
-          workflow_file=$(mktemp)
+          workflow_file="$(mktemp)"
           cp .github/workflows/sync-upstream.yml "$workflow_file"
           git checkout upstream/master -- .
           mkdir -p .github/workflows
           cp "$workflow_file" .github/workflows/sync-upstream.yml
           rm "$workflow_file"
           git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit after preserving the sync workflow"
+            exit 0
+          fi
+
           git commit -m "chore: sync fork with upstream"
           git push origin HEAD:master --force
