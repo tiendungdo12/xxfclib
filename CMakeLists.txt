@@ -359,6 +359,11 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/xx_memory_map.h
     include/xxfclib/strings/xx_string.h
     include/xxfclib/strings/xx_strings_scan.h
+    include/xxfclib/strings/xx_string_casefold.h
+    include/xxfclib/strings/xx_string_casecmp.h
+    include/xxfclib/strings/xx_string_uppercase.h
+    include/xxfclib/strings/xx_string_width.h
+    include/xxfclib/strings/xx_string_escape_debug.h
     include/xxfclib/extractor/xx_extractor.h
     include/xxfclib/io/xx_io_snapshot.h
     include/xxfclib/data/xx_byte_transform.h
@@ -367,6 +372,7 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/list/xx_list.h
     include/xxfclib/threads/xx_threads.h
     include/xxfclib/threads/xx_thread_pool.h
+    include/xxfclib/threads/xx_parallel.h
     include/xxfclib/sort/xx_sort.h
     include/xxfclib/var/xx_var.h
     include/xxfclib/global/xx_global.h
@@ -381,10 +387,28 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/algo/crc/xx_crc.h
     include/xxfclib/algo/md5/xx_md5.h
     include/xxfclib/algo/sha/xx_sha.h
+    include/xxfclib/algo/literal/xx_literal.h
+    include/xxfclib/algo/literal_nocase/xx_literal_nocase.h
+    include/xxfclib/algo/bignum/xx_bignum.h
+    include/xxfclib/algo/dsa/xx_dsa.h
+    include/xxfclib/algo/ec/xx_ec.h
+    include/xxfclib/algo/md2/xx_md2.h
+    include/xxfclib/algo/pki/xx_pki_verify.h
+    include/xxfclib/algo/rsa/xx_rsa.h
+    include/xxfclib/algo/sha512/xx_sha512.h
+    include/xxfclib/algo/asn1/xx_asn1.h
+    include/xxfclib/algo/pkcs7/xx_authenticode.h
+    include/xxfclib/algo/pkcs7/xx_pkcs7.h
+    include/xxfclib/algo/pkcs7/xx_tsp.h
+    include/xxfclib/algo/x509/xx_x509.h
     include/xxfclib/algo/adler32/xx_adler32.h
     include/xxfclib/algo/lzfse/xx_lzfse.h
     include/xxfclib/algo/blake2/xx_blake2.h
     include/xxfclib/algo/entropy/xx_entropy.h
+    include/xxfclib/algo/bytestats/xx_bytestats.h
+    include/xxfclib/algo/maskscan/xx_maskscan.h
+    include/xxfclib/algo/tlsh/xx_tlsh.h
+    include/xxfclib/algo/base64/xx_base64.h
     include/xxfclib/algo/kpa/xx_kpa.h
     include/xxfclib/algo/store/xx_store.h
     include/xxfclib/algo/deflate/xx_deflate.h
@@ -495,6 +519,7 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/algo/lzx/xx_lzx.h
     include/xxfclib/algo/quantum/xx_quantum.h
     include/xxfclib/formats/archive/zip/xx_zip.h
+    include/xxfclib/formats/archive/zip/xx_zip_yx.h
     include/xxfclib/formats/executable/jar/xx_jar.h
     include/xxfclib/formats/installer/apk/xx_apk.h
     include/xxfclib/formats/installer/ipa/xx_ipa.h
@@ -659,6 +684,9 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/game/cat/xx_cat.h
     include/xxfclib/formats/filesystem/csidos/xx_csidos.h
     include/xxfclib/formats/document/binder/xx_binder.h
+    include/xxfclib/formats/document/cfbf/xx_olecf_yx.h
+    include/xxfclib/formats/document/vba/xx_vba_yx.h
+    include/xxfclib/formats/installer/msi/xx_msi_yx.h
     include/xxfclib/formats/installer/jasc/xx_jasc.h
     include/xxfclib/formats/installer/recognita/xx_recognita.h
     include/xxfclib/formats/installer/scf/xx_scf.h
@@ -809,10 +837,13 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/executable/dotnet/xx_dotnet.h
     include/xxfclib/formats/executable/dotnet/xx_dotnet_inspect.h
     include/xxfclib/formats/executable/dotnet/xx_dotnet_reader.h
+    include/xxfclib/formats/executable/dotnet/xx_dotnet_yx.h
     include/xxfclib/formats/executable/pe/xx_pe.h
     include/xxfclib/formats/executable/pe/xx_pe_make.h
+    include/xxfclib/formats/executable/pe/xx_pe_yx.h
     include/xxfclib/formats/executable/elf/xx_elf_inspect.h
     include/xxfclib/formats/executable/elf/xx_elf.h
+    include/xxfclib/formats/executable/elf/xx_elf_yx.h
     include/xxfclib/formats/executable/elf/xx_elf_dwarf.h
     include/xxfclib/formats/executable/elf/xx_elf_dwarf_analysis.h
     include/xxfclib/formats/executable/dwarf/xx_dwarf_loclists.h
@@ -825,10 +856,12 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/executable/xcoff/xx_xcoff.h
     include/xxfclib/formats/executable/macho/xx_macho_inspect.h
     include/xxfclib/formats/executable/macho/xx_macho.h
+    include/xxfclib/formats/executable/macho/xx_macho_yx.h
     include/xxfclib/formats/executable/ne/xx_ne.h
     include/xxfclib/formats/executable/le/xx_le.h
     include/xxfclib/formats/executable/lx/xx_lx.h
     include/xxfclib/formats/executable/dex/xx_dex.h
+    include/xxfclib/formats/executable/dex/xx_dex_yx.h
     # Readers already registered by xx_format and the public API.
     include/xxfclib/formats/installer/sfx_analogx_emucore_ffs/xx_sfx_analogx_emucore_ffs.h
     include/xxfclib/formats/installer/sfx_krzip/xx_sfx_krzip.h
@@ -1114,6 +1147,7 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/other/capnproto_message/xx_capnproto_message.h
     include/xxfclib/formats/other/dbus_message/xx_dbus_message.h
     include/xxfclib/formats/other/windows_shell_link/xx_windows_shell_link.h
+    include/xxfclib/formats/other/windows_shell_link/xx_lnk_yx.h
     include/xxfclib/formats/other/pkcs7_cms/xx_pkcs7_cms.h
     include/xxfclib/formats/image/wavefront_obj/xx_wavefront_obj.h
     include/xxfclib/formats/image/off_mesh/xx_off_mesh.h
@@ -1520,6 +1554,7 @@ set(XXFCLIB_PUBLIC_HEADERS
     include/xxfclib/formats/image/glb/xx_glb.h
     include/xxfclib/formats/executable/spirv/xx_spirv.h
     include/xxfclib/formats/installer/crx/xx_crx.h
+    include/xxfclib/formats/installer/crx/xx_crx_yx.h
     include/xxfclib/formats/game/bethesda_bsa/xx_bethesda_bsa.h
     include/xxfclib/formats/game/bethesda_ba2/xx_bethesda_ba2.h
     include/xxfclib/formats/game/unityfs/xx_unityfs.h
@@ -1962,6 +1997,7 @@ set(XXFCLIB_SOURCES
     src/js/xx_js_builtins.c
     src/regex/xx_regex.c
     src/regex/xx_regex_search.c
+    src/regex/xx_regex_unicode.c
     src/regex/xx_regex_js.c
     src/regex/xx_regex_js_lex.c
     src/regex/xx_regex_js_strings.c
@@ -2014,12 +2050,16 @@ set(XXFCLIB_SOURCES
     src/die_engine/xx_die_engine_xdisasm.c
     src/formats/executable/pe/xx_pe_inspect.c
     src/formats/executable/pe/xx_pe_unwind_validate.c
+    src/formats/executable/pe/xx_pe_yx.c
+    src/formats/executable/pe/xx_pe_yx_authenticode.c
     src/formats/executable/pe/xx_pe_import.c
     src/formats/executable/pe/xx_pe_export.c
     src/formats/executable/pe/xx_pe_metadata.c
     src/formats/executable/pe/xx_pe_stream_common.c
     src/formats/executable/dotnet/xx_dotnet.c
     src/formats/executable/dotnet/xx_dotnet_inspect.c
+    src/formats/executable/dotnet/xx_dotnet_yx.c
+    src/formats/executable/dotnet/xx_dotnet_yx_method.c
     src/formats/executable/dotnet/platforms/xx_dotnet_us_simd.h
     src/formats/executable/dotnet/platforms/xx_dotnet_us_sse2.c
     src/formats/executable/dotnet/platforms/xx_dotnet_us_avx2.c
@@ -2068,6 +2108,11 @@ set(XXFCLIB_SOURCES
     src/memory/platforms/xx_memory_neon.c
     src/strings/xx_string.c
     src/strings/xx_strings_scan.c
+    src/strings/xx_string_casefold.c
+    src/strings/xx_string_casecmp.c
+    src/strings/xx_string_uppercase.c
+    src/strings/xx_string_width.c
+    src/strings/xx_string_escape_debug.c
     src/extractor/xx_extractor.c
     src/data/xx_pd.c
     src/data/xx_data_raw.c
@@ -2079,14 +2124,32 @@ set(XXFCLIB_SOURCES
     src/list/xx_list.c
     src/threads/xx_threads.c
     src/threads/xx_thread_pool.c
+    src/threads/xx_parallel.c
     src/sort/xx_sort_list.c
     src/var/xx_var.c
     src/algo/crc/xx_crc.c
     src/algo/md5/xx_md5.c
+    src/algo/literal/xx_literal.c
+    src/algo/literal_nocase/xx_literal_nocase.c
+    src/algo/literal/xx_literal_ssse3.c
+    src/algo/literal/xx_literal_avx2.c
     src/algo/sha/xx_sha.c
     src/algo/sha/xx_sha_simd.c
     src/algo/sha/platforms/xx_sha_neon.c
     src/algo/sha/platforms/xx_sha_arm_crypto.c
+    src/algo/bignum/xx_bignum.c
+    src/algo/dsa/xx_dsa.c
+    src/algo/ec/xx_ec.c
+    src/algo/md2/xx_md2.c
+    src/algo/pki/xx_pki_der_internal.h
+    src/algo/pki/xx_pki_verify.c
+    src/algo/rsa/xx_rsa.c
+    src/algo/sha512/xx_sha512.c
+    src/algo/asn1/xx_asn1.c
+    src/algo/pkcs7/xx_authenticode.c
+    src/algo/pkcs7/xx_pkcs7.c
+    src/algo/pkcs7/xx_tsp.c
+    src/algo/x509/xx_x509.c
     src/algo/adler32/xx_adler32.c
     src/algo/adler32/xx_adler32_io.c
     src/algo/adler32/platforms/xx_adler32_sse2.c
@@ -2112,9 +2175,18 @@ set(XXFCLIB_SOURCES
     src/algo/crc/platforms/xx_crc64_vpclmul.c
     src/algo/blake2/xx_blake2.c
     src/algo/entropy/xx_entropy.c
+    src/algo/entropy/xx_entropy_log2.c
     src/algo/entropy/platforms/xx_entropy_sse2.c
     src/algo/entropy/platforms/xx_entropy_avx2.c
     src/algo/entropy/platforms/xx_entropy_neon.c
+    src/algo/bytestats/xx_bytestats.c
+    src/algo/bytestats/platforms/xx_bytestats_sse2.c
+    src/algo/bytestats/platforms/xx_bytestats_avx2.c
+    src/algo/maskscan/xx_maskscan.c
+    src/algo/maskscan/platforms/xx_maskscan_sse2.c
+    src/algo/maskscan/platforms/xx_maskscan_avx2.c
+    src/algo/tlsh/xx_tlsh.c
+    src/algo/base64/xx_base64.c
     src/algo/kpa/xx_kpa.c
     src/algo/store/xx_store.c
     src/algo/deflate/xx_deflate.c
@@ -2282,6 +2354,7 @@ set(XXFCLIB_SOURCES
     src/formats/xx_format_extractor.c
     src/formats/xx_memory_map.c
     src/formats/archive/zip/xx_zip.c
+    src/formats/archive/zip/xx_zip_yx.c
     src/formats/archive/zip/xx_zip_legacy_encoder.c
     src/formats/archive/zip/xx_zip_extractor.c
     src/formats/executable/jar/xx_jar.c
@@ -2891,6 +2964,9 @@ set(XXFCLIB_SOURCES
     src/formats/filesystem/csidos/xx_csidos_extractor.c
     src/formats/document/binder/xx_binder.c
     src/formats/document/binder/xx_binder_extractor.c
+    src/formats/document/cfbf/xx_olecf_yx.c
+    src/formats/document/vba/xx_vba_yx.c
+    src/formats/installer/msi/xx_msi_yx.c
     src/formats/installer/jasc/xx_jasc.c
     src/formats/installer/jasc/xx_jasc_extractor.c
     src/formats/installer/recognita/xx_recognita.c
@@ -3188,6 +3264,7 @@ set(XXFCLIB_SOURCES
     src/formats/executable/pe/xx_pe_datastructs.c
     src/formats/executable/pe/xx_pe_exception.c
     src/formats/executable/elf/xx_elf.c
+    src/formats/executable/elf/xx_elf_yx.c
     src/formats/executable/elf/xx_elf_symbols.c
     src/formats/executable/elf/xx_elf_resources.c
     src/formats/executable/elf/xx_elf_extractor.c
@@ -3203,6 +3280,7 @@ set(XXFCLIB_SOURCES
     src/formats/executable/nintendo_rel/xx_nintendo_rel.c
     src/formats/executable/xcoff/xx_xcoff.c
     src/formats/executable/macho/xx_macho.c
+    src/formats/executable/macho/xx_macho_yx.c
     src/formats/executable/macho/xx_macho_exception.c
     src/formats/executable/macho/xx_macho_extractor.c
     src/formats/executable/macho/xx_macho_datastructs.c
@@ -3213,6 +3291,7 @@ set(XXFCLIB_SOURCES
     src/formats/executable/lx/xx_lx.c
     src/formats/executable/lx/xx_lx_extractor.c
     src/formats/executable/dex/xx_dex.c
+    src/formats/executable/dex/xx_dex_yx.c
     src/formats/executable/dex/xx_dex_extractor.c
     # Readers already registered by xx_format and the public API.
     src/formats/executable/xamarin_compressed_assembly/xx_xamarin_compressed_assembly.c
@@ -3822,6 +3901,7 @@ set(XXFCLIB_SOURCES
     src/formats/other/dbus_message/xx_dbus_message.c
     src/formats/other/dbus_message/xx_dbus_message_extractor.c
     src/formats/other/windows_shell_link/xx_windows_shell_link.c
+    src/formats/other/windows_shell_link/xx_lnk_yx.c
     src/formats/other/windows_shell_link/xx_windows_shell_link_extractor.c
     src/formats/other/pkcs7_cms/xx_pkcs7_cms.c
     src/formats/other/pkcs7_cms/xx_pkcs7_cms_extractor.c
@@ -4618,6 +4698,7 @@ set(XXFCLIB_SOURCES
     src/formats/executable/spirv/xx_spirv.c
     src/formats/executable/spirv/xx_spirv_extractor.c
     src/formats/installer/crx/xx_crx.c
+    src/formats/installer/crx/xx_crx_yx.c
     src/formats/installer/crx/xx_crx_extractor.c
     src/formats/game/bethesda_bsa/xx_bethesda_bsa.c
     src/formats/game/bethesda_bsa/xx_bethesda_bsa_extractor.c
@@ -5671,8 +5752,11 @@ endif()
 if(MSVC AND CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "^(X86|x86|x64|AMD64)$")
     set_source_files_properties(src/algo/adler32/platforms/xx_adler32_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/data/platforms/xx_data_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+    set_source_files_properties(src/algo/literal/xx_literal_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/memory/platforms/xx_memory_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/algo/entropy/platforms/xx_entropy_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+    set_source_files_properties(src/algo/bytestats/platforms/xx_bytestats_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+    set_source_files_properties(src/algo/maskscan/platforms/xx_maskscan_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/algo/lzma/platforms/xx_lzma_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/algo/crc/platforms/xx_crc64_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
     set_source_files_properties(src/algo/deflate/platforms/xx_deflate_avx2.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
@@ -5697,6 +5781,8 @@ foreach(_documented_native excelsior fead)
 endforeach()
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/docs/smart-install-maker-coverage.json"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/xxfclib/docs")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.UNICODE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/xxfclib/licenses/unicode")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/algo/bzip2/LICENSE.bzip2"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/xxfclib/licenses/bzip2")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/algo/wavpack/LICENSE"
@@ -5857,6 +5943,10 @@ if(XXFC_BUILD_TESTS OR XXFC_BUILD_THREAD_TESTS)
     set_tests_properties(test_threads PROPERTIES TIMEOUT 60)
     add_executable(test_thread_pool tests/test_thread_pool.c)
     target_link_libraries(test_thread_pool PRIVATE xxfclib::xxfclib)
+    add_executable(test_parallel tests/test_parallel.c)
+    target_link_libraries(test_parallel PRIVATE xxfclib::xxfclib)
+    add_test(NAME test_parallel COMMAND test_parallel)
+    set_tests_properties(test_parallel PROPERTIES TIMEOUT 60)
     add_test(NAME test_thread_pool COMMAND test_thread_pool)
     set_tests_properties(test_thread_pool PROPERTIES TIMEOUT 60)
 endif()
