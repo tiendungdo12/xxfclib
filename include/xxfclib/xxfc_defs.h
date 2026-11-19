@@ -1704,6 +1704,7 @@ typedef enum xx_file_type_e {
     XX_FILE_TYPE_C64S = 3044,
     XX_FILE_TYPE_CREATEINSTALL_PAK = 3045,
     XX_FILE_TYPE_CHIEFLZ_V1 = 3046,
+    XX_FILE_TYPE_IMPRESSIONS_RES = 3047,
     XX_FILE_TYPE_STARFORCE_OVL = 3003,
     XX_FILE_TYPE_SELF_UNSTUFFER = 3002,
     XX_FILE_TYPE_SECURA = 3001,
@@ -1789,6 +1790,7 @@ typedef enum xx_file_type_e {
 #define FILE_TYPE_C64S XX_FILE_TYPE_C64S
 #define FILE_TYPE_CREATEINSTALL_PAK XX_FILE_TYPE_CREATEINSTALL_PAK
 #define FILE_TYPE_CHIEFLZ_V1 XX_FILE_TYPE_CHIEFLZ_V1
+#define FILE_TYPE_IMPRESSIONS_RES XX_FILE_TYPE_IMPRESSIONS_RES
 #define FILE_TYPE_PE_RAWFILE XX_FILE_TYPE_PE_RAWFILE
 #define FILE_TYPE_PKLITE XX_FILE_TYPE_PKLITE
 #define FILE_TYPE_DFSEE_IMZ XX_FILE_TYPE_DFSEE_IMZ
@@ -2566,15 +2568,19 @@ typedef enum xx_file_type_e {
 
 #define BZIP1 XX_FILE_TYPE_BZIP1
 #define FILE_TYPE_BZIP1 XX_FILE_TYPE_BZIP1
-/** Unpacking interpretations are independent of file identity. Values occupy
- * a separate numeric domain so passing a file enum cannot select a handle. */
-typedef enum xx_handle_type_e {
-    XX_HANDLE_TYPE_UNKNOWN = 0,
-#define XX_UNPACK_HANDLE(name, value, file_type, carrier) XX_HANDLE_TYPE_##name = value,
-#include "xxfclib/formats/xx_format_unpack_handle_rows.inc"
-#undef XX_UNPACK_HANDLE
-} xx_handle_type_t;
-typedef xx_handle_type_t xx_handle_type;
+/** The executable that carries an unpackable payload. */
+typedef enum xx_unpack_carrier_e {
+    XX_UNPACK_CARRIER_NONE = 0,
+    XX_UNPACK_CARRIER_PE = 1,
+    XX_UNPACK_CARRIER_MSDOS = 2,
+    XX_UNPACK_CARRIER_COM = 3
+} xx_unpack_carrier_t;
+
+/** An unpacking interpretation: a file type and the carrier it was found in. */
+typedef struct xx_unpack_handle_s {
+    xx_file_type_t type;
+    xx_unpack_carrier_t carrier;
+} xx_unpack_handle_t;
 
 typedef xx_file_type_t xx_file_type;
 typedef xx_file_type_t FILE_TYPE;

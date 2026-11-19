@@ -90,6 +90,7 @@ static const xxfc_reader_alias aliases[] = {
     {"c64s", XX_FILE_TYPE_C64S},
     {"createinstall_pak", XX_FILE_TYPE_CREATEINSTALL_PAK},
     {"chieflz_v1", XX_FILE_TYPE_CHIEFLZ_V1},
+    {"impressions_res", XX_FILE_TYPE_IMPRESSIONS_RES},
     {"cork", XX_FILE_TYPE_CORK},
     {"cvrb", XX_FILE_TYPE_CVRB},
     {"caere", XX_FILE_TYPE_CVRB},
@@ -244,8 +245,8 @@ bool xxfc_open_fallback(xxfc_opened *opened, xx_io_device *device, int64_t base,
     handles = xx_format_get_unpack_handle_types_device(device, true);
     if (!handles) return false;
     for (i = 0; i < xx_list_count(handles); ++i) {
-        xx_handle_type_t handle = *(const xx_handle_type_t *)xx_list_at(handles, i);
-        xx_file_type_t type = xx_format_handle_type_file_type(handle);
+        xx_unpack_handle_t handle = *(const xx_unpack_handle_t *)xx_list_at(handles, i);
+        xx_file_type_t type = handle.type;
         if (type == previous || (pd && xx_pd_is_stopped(pd)) ||
             !xxfc_open_type(opened, device, base, type)) continue;
         if (validate(opened, password, pd)) { xx_list_destroy(handles); return true; }

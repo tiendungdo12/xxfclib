@@ -5,8 +5,8 @@
  * carries the block layouts.
  *
  * Written from the AmigaDOS on-disk structure.  The volume is located by
- * the boot block's "DOS" tag (or, on an exact DD/HD floppy, all-zero boot
- * blocks) and a root block that must check out in full (type, key, hash
+ * the boot block's "DOS" tag (or, on an exact DD/HD floppy, the root block
+ * alone when the boot blocks are zero or foreign) and a root block that must check out in full (type, key, hash
  * table size, secondary type and checksum).  The directory
  * tree is walked from the root's hash table through every hash chain; each
  * header block is claimed once, so cross-linked or looping chains cannot
@@ -133,7 +133,7 @@ typedef struct adf_volume_s {
     bool ffs;
     bool long_names;
     bool blank_boot; /**< Boot blocks all zero; OFS/FFS still to decide. */
-    bool type_known; /**< ffs is settled (always, unless blank_boot). */
+    bool type_known; /**< ffs is settled (always, when the boot tag is DOS). */
     int64_t format_size;
     char volume_name[96];
 } adf_volume;
@@ -313,7 +313,8 @@ static bool adf_boot_blank(xx_io_device *device, int64_t base)
 /* Find the root block.  Candidates, in order: the middle of the whole image
  * (floppies, 81..83-cylinder images and hardfiles), then a standard DD and
  * a standard HD floppy at the start of a longer or shorter image.  A volume
- * with blank boot blocks is accepted only as an exact standard floppy. */
+ * without a DOS tag (blank or foreign boot blocks) is accepted only as an
+ * exact standard floppy. */
 static bool adf_open_volume(Abstractformat *format, adf_volume *out, uint8_t *root_block)
 {
     uint8_t boot[4];
@@ -322,17 +323,22 @@ static bool adf_open_volume(Abstractformat *format, adf_volume *out, uint8_t *ro
     uint32_t candidates[3], spans[3];
     size_t count = 0U, index;
     adf_volume volume;
-    bool blank = false;
+    bool blank = false, untagged = false;
     if (!format || !format->device || !out || format->base_address < 0) return false;
     total = xx_io_total_size(format->device);
     if (total < format->base_address) return false;
     size = total - format->base_address;
     if (size < (int64_t)(4U * ADF_BSIZE) || !adf_read_at(format->device, format->base_address, boot, sizeof(boot))) return false;
     if (boot[0] != 'D' || boot[1] != 'O' || boot[2] != 'S' || boot[3] > 7U) {
-        if (boot[0] != 0U || boot[1] != 0U || boot[2] != 0U || boot[3] != 0U ||
-            (size != (int64_t)ADF_DD_BLOCKS * ADF_BSIZE && size != (int64_t)ADF_HD_BLOCKS * ADF_BSIZE) || !adf_boot_blank(format->device, format->base_address))
-            return false;
-        blank = true;
+        /* No usable tag: only an exact standard floppy, located by its root
+         * block alone.  The boot blocks are either all zero or foreign: a
+         * custom boot loader, a cracker's tag, "DOS" with a bad flags byte
+         * (TOSEC "[b DOS ID missing]").  AmigaDOS refuses such a disk, but
+         * the tree behind it is complete on real dumps (Shaq-Fu disks 2-6,
+         * Cytadela disk 5, Skaermtrolden Hugo disk 2). */
+        if (size != (int64_t)ADF_DD_BLOCKS * ADF_BSIZE && size != (int64_t)ADF_HD_BLOCKS * ADF_BSIZE) return false;
+        untagged = true;
+        blank = boot[0] == 0U && boot[1] == 0U && boot[2] == 0U && boot[3] == 0U && adf_boot_blank(format->device, format->base_address);
     }
     whole = size / (int64_t)ADF_BSIZE;
     if (whole <= (int64_t)ADF_MAX_BLOCKS) {
@@ -363,11 +369,11 @@ static bool adf_open_volume(Abstractformat *format, adf_volume *out, uint8_t *ro
         volume.base = format->base_address;
         volume.blocks = spans[index];
         volume.root = candidates[index];
-        volume.dos_type = blank ? 0U : boot[3];
-        volume.ffs = !blank && (boot[3] & 1U) != 0U;
-        volume.long_names = !blank && boot[3] >= 6U;
+        volume.dos_type = untagged ? 0U : boot[3];
+        volume.ffs = !untagged && (boot[3] & 1U) != 0U;
+        volume.long_names = !untagged && boot[3] >= 6U;
         volume.blank_boot = blank;
-        volume.type_known = !blank;
+        volume.type_known = !untagged;
         volume.format_size = (int64_t)spans[index] * (int64_t)ADF_BSIZE;
         adf_latin1_to_utf8(block + ADF_OFF_NAME + 1U, block[ADF_OFF_NAME], volume.volume_name, sizeof(volume.volume_name));
         *out = volume;
@@ -727,11 +733,16 @@ static int64_t adf_timestamp(const uint8_t *field)
 }
 
 /* A header block of the tree: type 2, its own number as key, the expected
- * secondary type set, a matching checksum. */
+ * secondary type set, a matching checksum.  A directory may carry a stale
+ * key: disks whose directory blocks were moved by a copier keep the old
+ * number there (TOSEC "Amiga Disk Magazine 031": 21 directories, every
+ * parent and hash link correct, ADFlib reads all 103 files).  The caller
+ * still requires the parent field to name the directory being walked. */
 static bool adf_entry_ok(const uint8_t *block, uint32_t number)
 {
     uint32_t secondary = xx_data_get_u32(block + ADF_OFF_SEC_TYPE, 4, 0, true);
-    return xx_data_get_u32(block + ADF_OFF_TYPE, 4, 0, true) == ADF_T_HEADER && xx_data_get_u32(block + ADF_OFF_KEY, 4, 0, true) == number &&
+    return xx_data_get_u32(block + ADF_OFF_TYPE, 4, 0, true) == ADF_T_HEADER &&
+           (xx_data_get_u32(block + ADF_OFF_KEY, 4, 0, true) == number || secondary == ADF_ST_USERDIR) &&
            (secondary == ADF_ST_USERDIR || secondary == ADF_ST_FILE || secondary == ADF_ST_SOFTLINK || secondary == ADF_ST_LINKFILE || secondary == ADF_ST_LINKDIR) &&
            adf_checksum_ok(block);
 }
@@ -783,7 +794,7 @@ static bool adf_entry_text(const adf_volume *volume, const uint8_t *block, uint3
     return true;
 }
 
-/* Blank boot blocks leave OFS or FFS open.  The first file with data settles
+/* Blank or foreign boot blocks leave OFS or FFS open.  The first file with data settles
  * it: an OFS data block is tagged (type 8, owning header, sequence 1, a size
  * that fits, a zero checksum), a raw FFS block essentially never is. */
 static void adf_settle_type(adf_volume *volume, uint32_t header, uint32_t first)
@@ -982,16 +993,28 @@ static bool adf_sink_put(adf_sink *sink, const uint8_t *data, size_t size)
 
 /* Copy the bytes of the file whose header is @p header, following the block
  * table of the header and then of each extension block.  Every data block
- * of an OFS file must name this header and the expected sequence number; an
- * FFS data block carries no tag, so only blocks that cannot hold data (the
- * root, the header, the table being read) are refused.  A revisited
- * extension block is found with Brent's cycle check and fails the copy. */
+ * of an OFS file must be a checksummed data block that names this header;
+ * an FFS data block carries no tag, so only blocks that cannot hold data
+ * (the root, the header, the table being read) are refused.  A revisited
+ * extension block is found with Brent's cycle check and fails the copy.
+ *
+ * The table is the authority on block order, as it is for AmigaDOS: the OFS
+ * sequence number and an extension block's parent field are redundant
+ * copies that real disks get wrong (a file whose last block is numbered 1
+ * and named by the header's first-data field; an extension block whose
+ * parent is the previous extension block or 0).  Both are therefore not
+ * compared.  Measured on TOSEC 2017-04-23: of 54 disks an independent
+ * structure walk found sound, 51 were refused only for these two fields,
+ * among them magazine cover disks (Amiga Format 107-112) that shipped this
+ * way.  The files have every block checksummed and owned and add up to the
+ * header's byte size.  Reference tools differ here: amitools refuses the
+ * sequence number, ADFlib follows the next links and writes an empty file. */
 static bool adf_copy_file(const adf_volume *volume, uint32_t header, uint64_t expected, adf_sink *sink, xx_pd_struct *pd)
 {
     uint8_t table[ADF_BSIZE];
     uint8_t data[ADF_BSIZE];
     uint64_t remaining;
-    uint32_t sequence = 1U, hops = 0U, current = header;
+    uint32_t hops = 0U, current = header;
     uint32_t tortoise = header, power = 1U, run = 0U;
     if (!adf_file_header_ok(volume, header, table)) return false;
     remaining = xx_data_get_u32(table + ADF_OFF_BYTE_SIZE, 4, 0, true);
@@ -1008,18 +1031,17 @@ static bool adf_copy_file(const adf_volume *volume, uint32_t header, uint64_t ex
                 if (!adf_sink_put(sink, data, take)) return false;
             } else {
                 uint32_t size = xx_data_get_u32(data + 12U, 4, 0, true);
-                if (xx_data_get_u32(data, 4, 0, true) != ADF_T_DATA || xx_data_get_u32(data + 4U, 4, 0, true) != header ||
-                    xx_data_get_u32(data + 8U, 4, 0, true) != sequence || size == 0U || size > ADF_OFS_PAYLOAD || !adf_checksum_ok(data))
+                if (xx_data_get_u32(data, 4, 0, true) != ADF_T_DATA || xx_data_get_u32(data + 4U, 4, 0, true) != header || size == 0U ||
+                    size > ADF_OFS_PAYLOAD || !adf_checksum_ok(data))
                     return false;
                 take = (uint64_t)size < remaining ? (size_t)size : (size_t)remaining;
                 if (!adf_sink_put(sink, data + ADF_OFS_HEADER, take)) return false;
             }
             remaining -= take;
-            ++sequence;
         }
         if (remaining == 0U) break;
         if (pd && xx_pd_is_stopped(pd)) return false;
-        /* Extension (list) block: type 16, its own key, parent = header. */
+        /* Extension (list) block: type 16, its own key, file secondary type. */
         current = xx_data_get_u32(table + ADF_OFF_EXTENSION, 4, 0, true);
         if (current == tortoise) return false;
         if (++run == power) {
@@ -1029,8 +1051,7 @@ static bool adf_copy_file(const adf_volume *volume, uint32_t header, uint64_t ex
         }
         if (++hops > volume->blocks || !adf_pointer_ok(volume, current) || !adf_read_block(volume, current, table) ||
             xx_data_get_u32(table + ADF_OFF_TYPE, 4, 0, true) != ADF_T_LIST || xx_data_get_u32(table + ADF_OFF_KEY, 4, 0, true) != current ||
-            xx_data_get_u32(table + ADF_OFF_PARENT, 4, 0, true) != header || xx_data_get_u32(table + ADF_OFF_SEC_TYPE, 4, 0, true) != ADF_ST_FILE ||
-            !adf_checksum_ok(table))
+            xx_data_get_u32(table + ADF_OFF_SEC_TYPE, 4, 0, true) != ADF_ST_FILE || !adf_checksum_ok(table))
             return false;
     }
     return adf_sink_flush(sink);

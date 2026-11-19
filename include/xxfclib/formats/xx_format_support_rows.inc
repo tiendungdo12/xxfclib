@@ -1164,6 +1164,9 @@ XX_SUPPORTED_FORMAT(AMIGA_EXT_ADF, amiga_ext_adf, "amiga ext adf")
 #ifdef XFU_SUPPORT_FORMAT_AMIGA_OLD_EXT_ADF
 XX_SUPPORTED_FORMAT(AMIGA_OLD_EXT_ADF, amiga_old_ext_adf, "amiga old ext adf")
 #endif
+#ifdef XFU_SUPPORT_FORMAT_AMIGA_IPF
+XX_SUPPORTED_FORMAT(AMIGA_IPF, amiga_ipf, "amiga ipf")
+#endif
 #ifdef XFU_SUPPORT_FORMAT_AODOS
 XX_SUPPORTED_FORMAT(AODOS, aodos, "AODOS")
 #endif
@@ -2051,4 +2054,7 @@ XX_SUPPORTED_FORMAT(SCUMMVM_DXA, scummvm_dxa, "ScummVM DXA video")
 #endif
 #ifdef XFU_SUPPORT_FORMAT_SWF
 XX_SUPPORTED_FORMAT(SWF, swf, "swf")
+#endif
+#ifdef XFU_SUPPORT_FORMAT_IMPRESSIONS_RES
+XX_SUPPORTED_FORMAT(IMPRESSIONS_RES, impressions_res, "Impressions resource (.gob)")
 #endif

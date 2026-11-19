@@ -16,6 +16,7 @@
     defined(XFU_SUPPORT_FORMAT_ALZ) || \
     defined(XFU_SUPPORT_FORMAT_AMIGALZX) || \
     defined(XFU_SUPPORT_FORMAT_AMIGA_EXT_ADF) || \
+    defined(XFU_SUPPORT_FORMAT_AMIGA_IPF) || \
     defined(XFU_SUPPORT_FORMAT_AMIGA_OLD_EXT_ADF) || \
     defined(XFU_SUPPORT_FORMAT_AMPK) || \
     defined(XFU_SUPPORT_FORMAT_ANDROIDBOOT) || \
@@ -242,6 +243,7 @@
     defined(XFU_SUPPORT_FORMAT_IGF2) || \
     defined(XFU_SUPPORT_FORMAT_IMD) || \
     defined(XFU_SUPPORT_FORMAT_IMP) || \
+    defined(XFU_SUPPORT_FORMAT_IMPRESSIONS_RES) || \
     defined(XFU_SUPPORT_FORMAT_INFOGRAMESFT) || \
     defined(XFU_SUPPORT_FORMAT_INNO_SETUP) || \
     defined(XFU_SUPPORT_FORMAT_INSA) || \
