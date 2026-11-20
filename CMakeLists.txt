@@ -2092,7 +2092,6 @@ set(XXFCLIB_SOURCES
     src/formats/executable/dotnet/xx_dotnet_cil.c
     src/formats/executable/dotnet/xx_dotnet_edit.c
     src/formats/executable/dotnet/xx_dotnet_resource_reader.c
-    src/formats/executable/dotnet/xx_dotnet_datastructs.c
     src/formats/executable/dotnet/xx_dotnet_extractor.c
     src/formats/installer/apk/xx_apk_inspect.c
     src/formats/document/pdf/xxpdf.c
@@ -2374,7 +2373,6 @@ set(XXFCLIB_SOURCES
     src/algo/quantum/xx_quantum.c
     src/formats/xx_format.c
     src/formats/xx_format_base.c
-    src/formats/xx_format_datastructs.c
     src/formats/xx_format_handle_types.c
     src/formats/xx_format_unpack_handles.c
     src/formats/xx_format_streams.c
@@ -3291,14 +3289,12 @@ set(XXFCLIB_SOURCES
     src/formats/executable/pe/xx_pe.c
     src/formats/executable/pe/xx_pe_make.c
     src/formats/executable/pe/xx_pe_extractor.c
-    src/formats/executable/pe/xx_pe_datastructs.c
     src/formats/executable/pe/xx_pe_exception.c
     src/formats/executable/elf/xx_elf.c
     src/formats/executable/elf/xx_elf_yx.c
     src/formats/executable/elf/xx_elf_symbols.c
     src/formats/executable/elf/xx_elf_resources.c
     src/formats/executable/elf/xx_elf_extractor.c
-    src/formats/executable/elf/xx_elf_datastructs.c
     src/formats/executable/elf/xx_elf_dwarf.c
     src/formats/executable/elf/xx_elf_dwarf_analysis.c
     src/formats/executable/dwarf/xx_dwarf_loclists.c
@@ -3313,7 +3309,6 @@ set(XXFCLIB_SOURCES
     src/formats/executable/macho/xx_macho_yx.c
     src/formats/executable/macho/xx_macho_exception.c
     src/formats/executable/macho/xx_macho_extractor.c
-    src/formats/executable/macho/xx_macho_datastructs.c
     src/formats/executable/ne/xx_ne.c
     src/formats/executable/ne/xx_ne_extractor.c
     src/formats/executable/le/xx_le.c

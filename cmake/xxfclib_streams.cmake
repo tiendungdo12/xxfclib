@@ -11,6 +11,9 @@ unset(_xxfc_stream)
 
 # Every optional native provider has a core reader with the same stem. The
 # explicit list also defines availability for bounded emulator/DIE profiles.
+# DataStructs has no C provider at all: every file type is served by a script
+# in src/datastructs (which needs the JS engine in the profile). A profile
+# without the JS engine has no DataStructs.
 set(_XXFC_STREAM_NATIVE_READERS
     7zip ar bz2 gz rar tar tar_bz2 tar_gz tar_lz4 tar_xz tar_zstd xz zip
     dotnet elf le lx macho ne omf pe pef vxworks xtac xorarchive)
@@ -25,11 +28,6 @@ function(xxfclib_select_stream_sources source_list)
            _source MATCHES "^src/formats/executable/pe/xx_pe_stream_(symbols|coff|metadata)\\.c$")
             continue()
         endif()
-        if(_source MATCHES "(^|/)xx_format_schema\\.c$")
-            string(REPLACE "xx_format_schema.c" "xx_format_datastructs.c" _source "${_source}")
-        elseif(_source MATCHES "(^|/)(xx_(pe|elf|macho|dotnet|tar_common))_data\\.c$")
-            string(REGEX REPLACE "_data\\.c$" "_datastructs.c" _source "${_source}")
-        endif()
         if(IS_ABSOLUTE "${_source}")
             set(_absolute "${_source}")
         else()
@@ -37,15 +35,13 @@ function(xxfclib_select_stream_sources source_list)
                 BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         endif()
         get_filename_component(_name "${_source}" NAME)
-        # Broad format globs also see former schema-family files and their
-        # per-format data sidecars. They belong to the optional data stream,
-        # unlike core readers whose actual format name happens to end in data.
+        # A reader source named *_data.c that only sets up data-struct callbacks
+        # belongs to the optional data stream, unlike core readers whose actual
+        # format name happens to end in data.
         if(NOT XXFC_ENABLE_STREAM_DATASTRUCTS AND _absolute MATCHES "/src/formats/")
-            if(_name MATCHES "^xx_format_schema_.+\\.c$")
-                continue()
-            elseif(_name MATCHES "_data\\.c$")
+            if(_name MATCHES "_data\\.c$")
                 file(STRINGS "${_absolute}" _data_provider_markers
-                    REGEX "xx_format_schema|setup_data_struct_callbacks")
+                    REGEX "setup_data_struct_callbacks")
                 if(_data_provider_markers)
                     continue()
                 endif()
@@ -70,8 +66,7 @@ function(xxfclib_select_stream_sources source_list)
                         EXISTS "${_reader}") OR
                        _reader_name STREQUAL "stream" OR
                        (_cap STREQUAL "datastructs" AND
-                        (_reader_name STREQUAL "format" OR
-                         _reader_name STREQUAL "tar_common")))
+                        _reader_name STREQUAL "format"))
                         set(_optional TRUE)
                         string(TOUPPER "${_cap}" _flag)
                         if(XXFC_ENABLE_STREAM_${_flag})
@@ -130,14 +125,20 @@ function(xxfclib_select_stream_sources source_list)
             list(APPEND _selected "${_root}/src/formats/xx_stream_${_cap}.c")
         endif()
     endforeach()
-    # The archive wrappers share the physical TAR structure descriptions.
     if(XXFC_ENABLE_STREAM_DATASTRUCTS)
         # Data-structure descriptions expose the public format type name.
         # The pure name catalog adds no concrete reader dependencies.
         list(APPEND _selected "${_root}/src/formats/xx_format_names.c")
+    endif()
+    # DataStructs scripts (src/datastructs/*.xxds) run in the JS engine, so the
+    # script host joins exactly the profiles that already carry it.
+    if(XXFC_ENABLE_STREAM_DATASTRUCTS)
         foreach(_source IN LISTS _selected)
-            if(_source MATCHES "(^|/)xx_tar(_(bz2|gz|lz4|xz|zstd))?_datastructs\\.c$")
-                list(APPEND _selected "${_root}/src/formats/archive/tar_common/xx_tar_common_datastructs.c")
+            if(_source MATCHES "(^|/)src/js/xx_js_engine\\.c$")
+                list(APPEND _selected
+                    "${_root}/src/datastructs/xx_xxds.c"
+                    "${_root}/src/datastructs/xx_xxds_fields.c"
+                    "${_root}/src/datastructs/xx_xxds_readers.c")
                 break()
             endif()
         endforeach()
@@ -174,12 +175,12 @@ function(xxfclib_configure_streams target)
     endforeach()
     set(_value 0)
     foreach(_source IN LISTS _sources)
-        if(_source MATCHES "(^|/)xx_format_datastructs\\.c$")
+        if(_source MATCHES "(^|/)xx_xxds\\.c$")
             set(_value 1)
             break()
         endif()
     endforeach()
-    target_compile_definitions(${target} PRIVATE XXFC_STREAM_HAS_SCHEMA=${_value})
+    target_compile_definitions(${target} PRIVATE XXFC_STREAM_HAS_XXDS=${_value})
 endfunction()
 
 # A project reusing an already-created xxfclib target must not silently run
